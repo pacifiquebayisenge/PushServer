@@ -1,0 +1,22 @@
+{
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "express-session": "^1.18.1",
+    "npkill": "^0.12.2",
+    "pg": "^8.13.0",
+    "socket.io": "^4.8.0",
+    "web-push": "^3.6.7"
+  }
+}

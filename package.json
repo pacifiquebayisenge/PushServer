@@ -9,11 +9,13 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@supabase/supabase-js": "^2.48.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.21.0",
     "express-session": "^1.18.1",
+    "nodemon": "^3.1.9",
     "npkill": "^0.12.2",
     "pg": "^8.13.0",
     "socket.io": "^4.8.0",

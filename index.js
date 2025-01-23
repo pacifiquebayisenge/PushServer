@@ -1,7 +1,7 @@
 // Import required modules
 const express = require("express");
 const http = require("http");
-// const SUPABASE = require("./supabase"); // Import upload middleware and handler
+
 const cors = require("cors"); // Import CORS
 const PUSH_MANAGER = require("./pushManager");
 

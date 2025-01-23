@@ -29,20 +29,46 @@ const subscribeToPush = async (req, res) => {
 
   const subscription = req.body;
 
-  // Insert subscription into Supabase
-  const { data, error } = await supabase
-    .from("push-subscriptions")
-    .insert([{ endpoint: subscription.endpoint, keys: subscription.keys }]);
+  try {
+    // Check if subscription already exists
+    const { data: existingSubscription, error: fetchError } = await supabase
+      .from("push-subscriptions")
+      .select("*")
+      .eq("endpoint", subscription.endpoint)
+      .single();
 
-  if (error) {
-    console.error("Error saving subscription to Supabase:", error);
-    return res.status(500).json({ error: error.message });
+    if (fetchError && fetchError.code !== "PGRST116") {
+      // Ignore "No rows found" error (PGRST116) and handle other errors
+      console.error("Error checking subscription in Supabase:", fetchError);
+      return res.status(500).json({ error: fetchError.message });
+    }
+
+    if (existingSubscription) {
+      // Subscription already exists
+      console.log("Subscription already exists:", existingSubscription);
+      return res.status(200).json({
+        message: "Already registered for push notifications",
+      });
+    }
+
+    // Insert new subscription into Supabase
+    const { data, error } = await supabase
+      .from("push-subscriptions")
+      .insert([{ endpoint: subscription.endpoint, keys: subscription.keys }]);
+
+    if (error) {
+      console.error("Error saving subscription to Supabase:", error);
+      return res.status(500).json({ error: error.message });
+    }
+
+    console.log("Subscription added:", data);
+    res.status(201).json({ message: "Subscription added" });
+  } catch (err) {
+    console.error("Unexpected error:", err);
+    res.status(500).json({ error: "An unexpected error occurred" });
   }
-
-  console.log("Subscription added:", data);
-
-  res.status(201).json({ message: "Subscription added" });
 };
+
 
 // Retrieve subscriptions and send push notifications
 const sendPush = async (req, res) => {

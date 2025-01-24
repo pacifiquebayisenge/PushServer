@@ -28,7 +28,19 @@ app.post("/api/subscribe", (req, res) => {
     if (!req.body || !req.body.endpoint) {
       return res.status(400).json({ error: "Invalid subscription object" });
     }
-    PUSH_MANAGER.subscribeToPush(req, res);
+    PUSH_MANAGER.subscribePush(req, res);
+  } catch (error) {
+    console.error("Subscribe error:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+app.post("/api/unsubscribe", (req, res) => {
+  try {
+    if (!req.body || !req.body.endpoint) {
+      return res.status(400).json({ error: "Invalid subscription object" });
+    }
+    PUSH_MANAGER.unsubscribePush(req, res);
   } catch (error) {
     console.error("Subscribe error:", error);
     res.status(500).json({ error: "Internal server error" });

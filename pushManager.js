@@ -191,6 +191,7 @@ const sendPush = async (req, res) => {
 };
 
 const PUSH_MANAGER = {
+  unsubscribePush,
   subscribePush,
   sendPush,
 };

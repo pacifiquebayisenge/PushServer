@@ -144,7 +144,7 @@ const sendPush = async (req, res) => {
         await webpush.sendNotification(
           subscription,
           JSON.stringify({
-            title: title || "Test Notification",
+            title: title || "Pic Roulette",
             body: body || "This is a test notification",
           })
         );

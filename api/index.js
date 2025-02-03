@@ -55,7 +55,7 @@ app.post("/api/send-notification", async (req, res) => {
 const server = http.createServer(app);
 
 // Start the server on port 3001
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3002;
 server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });

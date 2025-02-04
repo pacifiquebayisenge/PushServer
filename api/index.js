@@ -13,4 +13,4 @@ app.post("/api/subscribe", (req, res) => PUSH_MANAGER.subscribePush(req, res));
 app.post("/api/unsubscribe", (req, res) => PUSH_MANAGER.unsubscribePush(req, res));
 app.post("/api/send-notification", async (req, res) => await PUSH_MANAGER.sendPush(req, res));
 
-module.exports = app;
+module.exports = (req, res) => app(req, res);

@@ -16,7 +16,9 @@ app.use(
 
 // API Endpoints
 app.get("/api/test", (req, res) => {
-  return {message: "hello"}
+  return res.status(200).json({
+    message: "Already registered for push notifications",
+  });
 });
 
 

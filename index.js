@@ -16,15 +16,15 @@ app.use(
 );
 
 // API Endpoints
-app.post("/subscribe", (req, res) => {
+app.post("/api/subscribe", (req, res) => {
   PUSH_MANAGER.subscribePush(req, res);
 });
 
-app.post("/unsubscribe", (req, res) => {
+app.post("/api/unsubscribe", (req, res) => {
   PUSH_MANAGER.unsubscribePush(req, res);
 });
 
-app.post("/send-notification", async (req, res) => {
+app.post("/api/send-notification", async (req, res) => {
   await PUSH_MANAGER.sendPush(req, res);
 });
 

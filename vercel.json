@@ -11,8 +11,7 @@
       "src": "/(.*)",
       "dest": "/"
     }
-  ],
-  "build": {
-    "installCommand": "npm ci"
-  }
+  ]
+  
+  
 }

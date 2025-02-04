@@ -1,5 +1,4 @@
 const express = require("express");
-const serverless = require("serverless-http"); // Required for Vercel serverless functions
 const cors = require("cors");
 const PUSH_MANAGER = require("./pushManager");
 
@@ -29,4 +28,4 @@ app.post("/api/send-notification", async (req, res) => {
 });
 
 // Export the handler for Vercel
-module.exports = serverless(app);
+module.exports = app

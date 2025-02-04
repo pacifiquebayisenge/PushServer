@@ -15,6 +15,11 @@ app.use(
 );
 
 // API Endpoints
+app.get("/api/test", (req, res) => {
+  return {message: "hello"}
+});
+
+
 app.post("/api/subscribe", (req, res) => {
   PUSH_MANAGER.subscribePush(req, res);
 });

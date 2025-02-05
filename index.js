@@ -1,6 +1,6 @@
 const express = require("express");
 // const cors = require("cors");
-// const PUSH_MANAGER = require("./pushManager");
+const PUSH_MANAGER = require("./pushManager");
 
 const app = express();
 

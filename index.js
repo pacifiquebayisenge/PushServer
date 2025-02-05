@@ -13,8 +13,8 @@ const port = process.env.PORT || 8080
 app.get("/", (req, res) => {  return res.status(200).json({    message: "testing",  });});
 
 app.post("/api/subscribe", (req, res) => PUSH_MANAGER.subscribePush(req, res));
-// app.post("/api/unsubscribe", (req, res) => PUSH_MANAGER.unsubscribePush(req, res));
-// app.post("/api/send-notification", async (req, res) => await PUSH_MANAGER.sendPush(req, res));
+app.post("/api/unsubscribe", (req, res) => PUSH_MANAGER.unsubscribePush(req, res));
+app.post("/api/send-notification", async (req, res) => await PUSH_MANAGER.sendPush(req, res));
 
 
 app.listen(port, () => {

@@ -13,6 +13,7 @@ app.use(cors({ origin: "*", methods: ["GET", "POST"], allowedHeaders: "*" }));
 app.get("/", (req, res) => {  return res.status(200).json({    message: "testing",  });});
 
 app.post("/api/subscribe", (req, res) => PUSH_MANAGER.subscribePush(req, res));
+app.post("/api/check-subscription", (req, res) => PUSH_MANAGER.checkSubscription(req, res));
 app.post("/api/unsubscribe", (req, res) => PUSH_MANAGER.unsubscribePush(req, res));
 app.post("/api/send-notification", async (req, res) => await PUSH_MANAGER.sendPush(req, res));
 

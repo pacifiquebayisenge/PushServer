@@ -1,4 +1,5 @@
 require("dotenv").config();
+const chalk = require("chalk");
 const webpush = require("web-push");
 const { createClient } = require("@supabase/supabase-js");
 
@@ -18,106 +19,90 @@ const supabase = createClient(
   process.env.SUPABASE_KEY
 );
 
-// Store subscription in Supabase
-const subscribePush = async (req, res) => {
-  console.log("Request received at /api/subscribe:", req.body);
-
-  if (!req.body || !req.body.endpoint || !req.body.keys) {
-    console.error("Invalid subscription payload");
+const validateSubscription = (req, res) => {
+  if (!req.body?.endpoint || !req.body?.keys) {
     return res.status(400).json({ error: "Invalid subscription payload" });
   }
+  return { endpoint: req.body.endpoint, keys: req.body.keys };
+};
 
-  const subscription = req.body;
+// Store subscription in Supabase
+const subscribePush = async (req, res) => {
+  const subscription = validateSubscription(req, res);
+  if (!subscription) return;
 
-  try {
-    // Check if subscription already exists
-    const { data: existingSubscription, error: fetchError } = await supabase
-      .from("push-subscriptions")
-      .select("*")
-      .eq("endpoint", subscription.endpoint)
-      .single();
+  const { data: existing, error } = await supabase
+    .from("push-subscriptions")
+    .select("*")
+    .eq("endpoint", subscription.endpoint)
+    .single();
 
-    if (fetchError && fetchError.code !== "PGRST116") {
-      // Ignore "No rows found" error (PGRST116) and handle other errors
-      console.error("Error checking subscription in Supabase:", fetchError);
-      return res.status(500).json({ error: fetchError.message });
-    }
+  // This check prevents false errors when a subscription is simply not found.
+  if (error && error.code !== "PGRST116")
+    return res.status(500).json({ error: error.message });
 
-    if (existingSubscription) {
-      // Subscription already exists
-      console.log("Subscription already exists:", existingSubscription);
-      return res.status(200).json({
-        message: "Already registered for push notifications",
-      });
-    }
-
-    // Insert new subscription into Supabase
-    const { data, error } = await supabase
-      .from("push-subscriptions")
-      .insert([{ endpoint: subscription.endpoint, keys: subscription.keys }]);
-
-    if (error) {
-      console.error("Error saving subscription to Supabase:", error);
-      return res.status(500).json({ error: error.message });
-    }
-
-    console.log("Subscription added !", subscription);
-    res.status(201).json({ message: "Subscription added", subscription });
-  } catch (err) {
-    console.error("Unexpected error:", err);
-    res.status(500).json({ error: "An unexpected error occurred" });
+  if (existing) {
+    console.log("Subscription already registered", subscription.endpoint);
+    return res
+      .status(200)
+      .json({ message: "Already registered", subscription: existing });
   }
+
+  const { error: insertError } = await supabase
+    .from("push-subscriptions")
+    .insert(subscription);
+
+  if (insertError) {
+    console.log("Error when adding subscription", subscription.endpoint);
+    return res.status(500).json({ error: insertError.message });
+  }
+
+  res.status(201).json({ message: "Subscription added", subscription });
+  console.log(chalk.cyan("✅ Subscription added: "), subscription.endpoint);
+};
+
+// Check if subscription already exists
+const checkSubscription = async (req, res) => {
+  const subscription = validateSubscription(req, res);
+  if (!subscription) return;
+
+  const { data: existing, error } = await supabase
+    .from("push-subscriptions")
+    .select("endpoint, keys")
+    .eq("endpoint", subscription.endpoint)
+    .single();
+
+  // This check prevents false errors when a subscription is simply not found.
+  if (error && error.code !== "PGRST116")
+    return res.status(500).json({ error: error.message });
+
+  if (existing) {
+    console.log(chalk.cyan("✅ Subscription exists :"), subscription.endpoint);
+    return res
+      .status(200)
+      .json({ message: "Subscription exists", subscription: existing });
+  }
+
+  res.status(404).json({ message: "Subscription not found" });
+  console.log("Subscription not found", subscription.endpoint);
 };
 
 const unsubscribePush = async (req, res) => {
-  console.log("Request received at /api/unsubscribe:", req.body);
+  const subscription = validateSubscription(req, res);
+  if (!subscription) return;
 
-  if (!req.body || !req.body.endpoint || !req.body.keys) {
-    console.error("Invalid subscription payload");
-    return res.status(400).json({ error: "Invalid subscription payload" });
+  const { error } = await supabase
+    .from("push-subscriptions")
+    .delete()
+    .eq("endpoint", subscription.endpoint);
+
+  if (error) {
+    console.log("error when deleting subscription", subscription.endpoint);
+    return res.status(500).json({ error: error.message });
   }
 
-  const subscription = req.body;
-
-  try {
-    // Check if the subscription exists in Supabase
-    const { data: existingSubscription, error: fetchError } = await supabase
-      .from("push-subscriptions")
-      .select("*")
-      .eq("endpoint", subscription.endpoint)
-      .single();
-
-    if (fetchError && fetchError.code !== "PGRST116") {
-      // Ignore "No rows found" error (PGRST116) and handle other errors
-      console.error("Error checking subscription in Supabase:", fetchError);
-      return res.status(500).json({ error: fetchError.message });
-    }
-
-    if (!existingSubscription) {
-      // Subscription doesn't exist, so do nothing
-      console.log("No existing subscription found.");
-      return res.status(200).json({ message: "No subscription to delete" });
-    }
-
-    // Subscription exists, delete it
-    const { error: deleteError } = await supabase
-      .from("push-subscriptions")
-      .delete()
-      .eq("endpoint", subscription.endpoint);
-
-    if (deleteError) {
-      console.error("Error deleting subscription from Supabase:", deleteError);
-      return res.status(500).json({ error: deleteError.message });
-    }
-
-    console.log("Subscription deleted successfully:", subscription);
-    return res
-      .status(200)
-      .json({ message: "Successfully deleted the subscription" });
-  } catch (err) {
-    console.error("Unexpected error:", err);
-    res.status(500).json({ error: "An unexpected error occurred" });
-  }
+  res.status(200).json({ message: "Subscription deleted" });
+  console.log(chalk.cyan("✅ Subscription deleted :"), subscription.endpoint);
 };
 
 // Retrieve subscriptions and send push notifications
@@ -191,8 +176,9 @@ const sendPush = async (req, res) => {
 };
 
 const PUSH_MANAGER = {
-  unsubscribePush,
   subscribePush,
+  checkSubscription,
+  unsubscribePush,
   sendPush,
 };
 
